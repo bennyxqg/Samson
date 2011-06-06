@@ -56,6 +56,8 @@ flashplayer :test => "bin/Samson-test.swf"
 compc "bin/Samson.swc" do |t|
   t.input_class = "Samson"
   t.source_path << 'src'
+  t.include_sources << 'src/org'
+  t.external_library_path << 'lib/AS3Futures.swc'
 end
 
 desc "Compile the SWC file"
@@ -72,5 +74,5 @@ end
 
 ##############################
 # DEFAULT
-task :default => :run
+task :default => :swc
 
