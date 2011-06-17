@@ -1,6 +1,9 @@
 package {
     import asunit.core.TextCore;
+    
     import flash.display.MovieClip;
+    
+    import org.osflash.samson.AllTests;
 
     public class SamsonRunner extends MovieClip {
         

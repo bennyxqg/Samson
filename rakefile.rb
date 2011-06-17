@@ -42,8 +42,17 @@ library :asunit4
 
 # Compile the test swf
 mxmlc "bin/Samson-test.swf" => :asunit4 do |t|
+  
+  paths = FileList['test/*.*'] 
+  paths.each do |path| 
+    filename = path.match(/\/(.+)$/)[1]
+    FileUtils.cp path, File.join('bin', filename) 
+  end
+  
   t.input = "src/SamsonRunner.as"
   t.source_path << 'test'
+  t.source_path << 'src'
+  t.library_path << 'lib/AS3Futures.swc'
   t.debug = true
 end
 
@@ -58,6 +67,7 @@ compc "bin/Samson.swc" do |t|
   t.source_path << 'src'
   t.include_sources << 'src/org'
   t.external_library_path << 'lib/AS3Futures.swc'
+  t.static_rsls = false
 end
 
 desc "Compile the SWC file"

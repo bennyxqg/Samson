@@ -9,11 +9,24 @@ package org.osflash.samson
 	import flash.events.SecurityErrorEvent;
 	import flash.net.URLLoader;
 	import flash.net.URLRequest;
+	import flash.system.LoaderContext;
 	
+	import org.osflash.futures.Future;
 	import org.osflash.futures.FutureProgressable;
 	import org.osflash.futures.TypedFuture;
 
-	public function loadSingle(url:String, map:Function=null):FutureProgressable
+	/**
+	 *
+	 * <p>valid signitures
+     * <ul>
+     * 		<li>function(url:String):FutureProgressable</li>
+     * 		<li>function(url:String, data:Object):FutureProgressable</li>
+	 *   	<li>function(url:String, data:Object, dataFormat:String[URLLoaderDataFormat]):FutureProgressable</li>
+	 * 		<li>function(url:String, context:LoaderContext):FutureProgressable</li>
+     * </ul>
+     * </p> 
+	 */	
+	public function loadSingle(url:String, ...rest):FutureProgressable
 	{
 		const future:FutureProgressable = new TypedFuture()
 		
@@ -41,6 +54,21 @@ package org.osflash.samson
 		else
 		{
 			loader = new URLLoader()
+			
+			if (rest.length == 1)
+			{
+				loader.data = rest[0]
+			}
+			else if (rest.length == 2)
+			{
+				loader.data = rest[0]
+				loader.dataFormat = rest[1]
+			}
+			else if (rest.length > 2)
+			{
+				throw ArgumentError('valid signitures for URLLoader are function(url:String), function(url:String, data:Object), function(url:String, data:Object, dataFormat:String[URLLoaderDataFormat])')	
+			}
+			
 			eventReporter = IEventDispatcher(loader)
 		}
 		
@@ -52,7 +80,7 @@ package org.osflash.samson
 				: loader.data
 			
 			// complete the loading future and map the loaded data to a new type if needed
-			future.complete((map == null) ? data : map(data))	
+			future.complete(data)	
 		}
 		
 		const progressHandler:Function = function (e:ProgressEvent):void {
@@ -75,8 +103,22 @@ package org.osflash.samson
 		eventReporter.addEventListener(IOErrorEvent.IO_ERROR, errorHandler)
 		eventReporter.addEventListener(SecurityErrorEvent.SECURITY_ERROR, errorHandler)
 		
-		loader.load(new URLRequest(url))
+		const loadArgs:Array = [new URLRequest(url)]	
+			
+		if (isBinary)
+		{
+			if (rest.length == 1)
+			{
+				loadArgs.push(rest[0])
+			}
+			else if (rest.length > 1)
+			{
+				throw ArgumentError('valid signitures for Loader are function(url:String), function(url:String, context:LoaderContext)')
+			}
+		}
 		
+		loader.load.apply(null, loadArgs)	
+			
 		return future
 	}
 }

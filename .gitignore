@@ -18,6 +18,8 @@ bin-release/*
 .FlexUnitSettings
 .project
 
+*tmproj
+
 #rake
 Gemfile.lock
 

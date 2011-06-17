@@ -4,7 +4,7 @@ package {
     public class Samson extends Sprite {
 
         public function Samson() {
-            trace(">> Samson Instantiated!");
+            
         }
     }
 }
