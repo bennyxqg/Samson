@@ -26,9 +26,9 @@ package org.osflash.samson
 		public function testLoadXMLFail():void
 		{
 			loadSingle('non-existent.xml')
-			.onCompleted(function (raw:String):void {
-				fail('the png should not have loaded')
-			})
+				.onCompleted(function (raw:String):void {
+					fail('the png should not have loaded')
+				})
 				.onCancelled(async.add(function (e:ErrorEvent):void {}, 200))
 		}
 		

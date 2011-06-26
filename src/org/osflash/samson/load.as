@@ -1,6 +1,6 @@
 package org.osflash.samson
 {
-	import org.osflash.futures.FutureProgressable;
+	import org.osflash.futures.FutureProgressable
 
 	// generic loader
 	public function load(...urls):FutureProgressable

@@ -13,7 +13,7 @@ package org.osflash.samson
 	
 	import org.osflash.futures.Future;
 	import org.osflash.futures.FutureProgressable;
-	import org.osflash.futures.TypedFuture;
+	import org.osflash.futures.creation.TypedFuture
 
 	/**
 	 *
