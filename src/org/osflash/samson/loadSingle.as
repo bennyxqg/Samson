@@ -27,11 +27,11 @@ package org.osflash.samson
      * </ul>
      * </p> 
 	 */	
-	public function loadSingle(urlOrUrlRequest:*, ...rest):FutureProgressable
+	public function loadSingle(stringOrURLRequest:*, ...rest):FutureProgressable
 	{
-		const urlRequest:URLRequest = (urlOrUrlRequest is String)
-			? new URLRequest(urlOrUrlRequest)
-			: urlOrUrlRequest
+		const urlRequest:URLRequest = (stringOrURLRequest is URLRequest)
+			? stringOrURLRequest
+			: new URLRequest(stringOrURLRequest.toString())
 			
 		const future:FutureProgressable = new TypedFuture()
 		

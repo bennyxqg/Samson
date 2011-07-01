@@ -9,8 +9,7 @@ package org.osflash.samson
 		
 		for (var i:int=1; i<urls.length; ++i)
 		{
-			var url:String = urls[i]
-			future = FutureProgressable(future.waitOnCritical(loadSingle(url)))
+			future = FutureProgressable(future.waitOnCritical(loadSingle(urls[i])))
 		}
 		
 		return future
