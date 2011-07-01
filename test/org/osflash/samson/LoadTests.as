@@ -10,47 +10,60 @@ package org.osflash.samson
 	public class LoadTests
 	{
 		[Inject]
-		public var async:IAsync
+		public var asyncManager:IAsync
+		
+		static protected const Duration:Number = 200  
+		
+		protected function async(f:Function):Function
+		{
+			return asyncManager.add(f, Duration) 
+		}
+		
+		protected const 
+			stringCallback:Function = function (string:String):void {},
+			xmlListCallback:Function = function (xmlList:XMLList):void {},
+			xmlCallback:Function = function (xml:XML):void {},
+			imageCallback:Function = function (bitmap:Bitmap):void {},
+			soundCallback:Function = function (sound:Sound):void {},
+			cancelCallback:Function = function (e:ErrorEvent):void {}
+		
+		protected function failCallback(message:String):Function 
+		{
+			return function(...args):void {
+				fail(message)
+			}
+		}
 		
 		[Test]
 		public function testLoadXMLSuccess():void
 		{
-			loadSingle('test.png')
-				.onCompleted(async.add(function (raw:String):void {}, 200))
-				.onCancelled(function (e:ErrorEvent):void {
-					fail('the xml should have loaded')
-				})
+			loadSingle('test.xml')
+				.onCompleted(async(stringCallback))
+				.onCancelled(failCallback('the png should have loaded'))
 		}
 		
 		[Test]
 		public function testLoadXMLFail():void
 		{
 			loadSingle('non-existent.xml')
-				.onCompleted(function (raw:String):void {
-					fail('the png should not have loaded')
-				})
-				.onCancelled(async.add(function (e:ErrorEvent):void {}, 200))
+				.onCompleted(failCallback('the xml should not have loaded'))
+				.onCancelled(async(cancelCallback))
 		}
 		
 		[Test]
 		public function testLoadPNGSuccess():void
 		{
 			loadSingle('test.png')
-				.onCompleted(async.add(function (bitmap:Bitmap):void {}, 200))
-				.onCancelled(function (e:ErrorEvent):void {
-					fail('the png should have loaded')
-				})
+				.onCompleted(async(imageCallback))
+				.onCancelled(failCallback('the png should have loaded'))
 		}
 		
-		// TODO: implement audio loading
-//		[Test]
-//		public function testLoadMP3Success():void
-//		{
-//			loadSingle('test.mp3')
-//				.onCompleted(async.add(function (sound:Sound):void {}, 200))
-//				.onCancelled(function (e:ErrorEvent):void {
-//					fail('the mp3 should have loaded')
-//				})
-//		}
+		[Test]
+		public function testLoadMP3Success():void
+		{
+			loadSingle('test.mp3')
+				.onCompleted(async(soundCallback))
+				.onCancelled(failCallback('the mp3 should have loaded'))
+		}
 	}
 }
