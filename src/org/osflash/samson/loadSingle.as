@@ -74,7 +74,7 @@ package org.osflash.samson
 			}
 			else if (rest.length == 2)
 			{
-				loader.data = rest[0]
+				urlRequest.data = rest[0]
 				loader.dataFormat = rest[1]
 			}
 			else if (rest.length > 2)
