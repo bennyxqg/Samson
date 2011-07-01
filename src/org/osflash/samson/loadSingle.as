@@ -7,33 +7,40 @@ package org.osflash.samson
 	import flash.events.IOErrorEvent;
 	import flash.events.ProgressEvent;
 	import flash.events.SecurityErrorEvent;
+	import flash.media.Sound;
 	import flash.net.URLLoader;
 	import flash.net.URLRequest;
 	import flash.system.LoaderContext;
 	
 	import org.osflash.futures.Future;
 	import org.osflash.futures.FutureProgressable;
-	import org.osflash.futures.creation.TypedFuture
+	import org.osflash.futures.creation.TypedFuture;
 
 	/**
 	 *
 	 * <p>valid signitures
      * <ul>
-     * 		<li>function(url:String):FutureProgressable</li>
-     * 		<li>function(url:String, data:Object):FutureProgressable</li>
-	 *   	<li>function(url:String, data:Object, dataFormat:String[URLLoaderDataFormat]):FutureProgressable</li>
-	 * 		<li>function(url:String, context:LoaderContext):FutureProgressable</li>
+     * 		<li>function(urlOrUrlRequest:[String|UrlRequest]):FutureProgressable</li>
+     * 		<li>function(urlOrUrlRequest:[String|UrlRequest], data:Object):FutureProgressable</li>
+	 *   	<li>function(urlOrUrlRequest:[String|UrlRequest], data:Object, dataFormat:String[URLLoaderDataFormat]):FutureProgressable</li>
+	 * 		<li>function(urlOrUrlRequest:[String|UrlRequest], context:LoaderContext):FutureProgressable</li>
      * </ul>
      * </p> 
 	 */	
-	public function loadSingle(url:String, ...rest):FutureProgressable
+	public function loadSingle(urlOrUrlRequest:*, ...rest):FutureProgressable
 	{
+		const urlRequest:URLRequest = (urlOrUrlRequest is String)
+			? new URLRequest(urlOrUrlRequest)
+			: urlOrUrlRequest
+			
 		const future:FutureProgressable = new TypedFuture()
 		
 		// handle how the loading request can be cancelled
 		future.onCancelled(function (...args):void {
 			removeEvents()
-			loader.close()
+			
+			try { loader.close() }
+			catch (e:Error) {}
 			
 			if (isBinary)
 			{
@@ -41,12 +48,18 @@ package org.osflash.samson
 			}
 		})
 			
-		const isBinary:Boolean = url.search('\.swf$|\.png$|\.jpg$|\.jpeg$|\.mp3') >= 0
+		const isAudio:Boolean = urlRequest.url.search('\.mp3|\.aac') >= 0
+		const isBinary:Boolean = urlRequest.url.search('\.swf$|\.png$|\.jpg$|\.jpeg$') >= 0
 		
 		var loader:Object
 		var eventReporter:IEventDispatcher
 		
-		if (isBinary)
+		if (isAudio)
+		{
+			loader = new Sound()
+			eventReporter = IEventDispatcher(loader)
+		}
+		else if (isBinary)
 		{
 			loader = new Loader()
 			eventReporter = loader.contentLoaderInfo
@@ -75,9 +88,11 @@ package org.osflash.samson
 		const completeHandler:Function = function (e:Event):void {
 			removeEvents()
 			
-			const data:* = (isBinary)
-				? loader.contentLoaderInfo.content
-				: loader.data
+			const data:* = (isAudio)
+				?	loader
+				:	(isBinary)
+					? loader.contentLoaderInfo.content
+					: loader.data
 			
 			// complete the loading future and map the loaded data to a new type if needed
 			future.complete(data)	
@@ -103,9 +118,9 @@ package org.osflash.samson
 		eventReporter.addEventListener(IOErrorEvent.IO_ERROR, errorHandler)
 		eventReporter.addEventListener(SecurityErrorEvent.SECURITY_ERROR, errorHandler)
 		
-		const loadArgs:Array = [new URLRequest(url)]	
+		const loadArgs:Array = [urlRequest]	
 			
-		if (isBinary)
+		if (isBinary || isAudio)
 		{
 			if (rest.length == 1)
 			{
@@ -113,7 +128,7 @@ package org.osflash.samson
 			}
 			else if (rest.length > 1)
 			{
-				throw ArgumentError('valid signitures for Loader are function(url:String), function(url:String, context:LoaderContext)')
+				throw ArgumentError('valid signitures for Loader are function(url:String), function(url:String, context:LoaderContext|SoundLoaderContext)')
 			}
 		}
 		

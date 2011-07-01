@@ -29,6 +29,8 @@ require 'asunit4'
 # Compile the debug swf
 mxmlc "bin/Samson-debug.swf" do |t|
   t.input = "src/Samson.as"
+  t.source_path << 'src'
+  t.library_path << 'lib/AS3Futures.swc'
   t.debug = true
 end
 

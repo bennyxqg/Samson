@@ -1,15 +1,17 @@
 package {
     import flash.display.Sprite;
     import flash.events.ErrorEvent;
+    import flash.net.URLRequest;
     
     import org.osflash.samson.load;
     import org.osflash.samson.loadSingle;
+    import org.osflash.samson.transformers.stringToXMLList;
 
     public class Samson extends Sprite {
 
         public function Samson() {
 			
-			loadSingle('non-existent.xml')
+			loadSingle(new URLRequest('test.xml'))
 				.onCompleted(function (raw:String):void {
 					trace('onCompleted:', raw)
 				})
