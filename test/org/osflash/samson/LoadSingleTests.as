@@ -1,11 +1,11 @@
 package org.osflash.samson
 {
-	public class LoadTests extends CommonTests
+	public class LoadSingleTests extends CommonTests
 	{
 		[Before]
 		public function setup():void 
 		{
-			loadProxy = load
+			loadProxy = loadSingle
 		}
 	}
 }
