@@ -1,6 +1,7 @@
 package org.osflash.samson
 {
 	import flash.display.Loader;
+	import flash.errors.IOError;
 	import flash.events.ErrorEvent;
 	import flash.events.Event;
 	import flash.events.IEventDispatcher;
@@ -103,7 +104,15 @@ package org.osflash.samson
 		}
 		
 		const errorHandler:Function = function (e:ErrorEvent):void {
-			future.cancel(e)
+			if (future.cancelledListeners > 1)
+			{
+				future.cancel(e)
+			}
+			else
+			{	
+				if (e is IOErrorEvent)					throw new IOError(e.text)
+				else if (e is SecurityErrorEvent)		throw new SecurityError(e.text)
+			}
 		}
 		
 		const removeEvents:Function = function():void {
