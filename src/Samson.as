@@ -31,7 +31,7 @@ package {
 		protected function producer():IFuture
 		{
 			return isolate(
-				load('producer', 'test.xml')
+				load('producer', 'testd.xml')
 					.orElseCompleteWith("<empty></empty>")
 					.andThen(function (kickstartXMLRaw:String):IFuture {
 						return instantSuccess('kickstartRaw', new XML(kickstartXMLRaw))
