@@ -52,7 +52,7 @@ package org.osflash.samson
 		{
 			loadProxy('test.xml')
 				.onCompleted(async(stringCallback))
-				.onCancelled(failCallback('the png should have loaded'))
+				.onCancelled(failCallback('the xml should have loaded'))
 		}
 		
 		[Test]

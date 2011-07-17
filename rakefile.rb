@@ -29,18 +29,18 @@ require 'asunit4'
 MAIN_CLASS = 'Samson'
 
 BUILD_DIR = 'bin'
-SWC = "#{BUILD_DIR}/Samson.swc"
-SWF_DEBUG = "#{BUILD_DIR}/Samson-debug.swf"
-SWF_TEST = "#{BUILD_DIR}/Samson-test.swf"
+SWC = "#{BUILD_DIR}/#{MAIN_CLASS}.swc"
+SWF_DEBUG = "#{BUILD_DIR}/#{MAIN_CLASS}-debug.swf"
+SWF_TEST = "#{BUILD_DIR}/#{MAIN_CLASS}-test.swf"
 
 SRC_DIR = 'src'
+SRC_PACKAGE_DIR = "#{SRC_DIR}/org"
 SRC_MAIN_FILE = "#{SRC_DIR}/#{MAIN_CLASS}.as"
 
 TEST_SRC_DIR = 'test'
-TEST_SRC_MAIN_FILE =  "#{SRC_DIR}/SamsonRunner.as"
+TEST_SRC_MAIN_FILE =  "#{SRC_DIR}/#{MAIN_CLASS}Runner.as"
 
 LIB_DIR = 'lib'
-LIB_FUTURES_FILE = "#{LIB_DIR}/AS3Futures.swc"
 
 DOCS_DIR = 'docs'
 
@@ -53,7 +53,7 @@ with(SWF_DEBUG) do |file|
   mxmlc file do |t|
     t.input = SRC_MAIN_FILE
     t.source_path << SRC_DIR
-    t.library_path << LIB_FUTURES_FILE
+    t.library_path << LIB_DIR
     t.debug = true
   end
 
@@ -66,48 +66,57 @@ end
 
 library :asunit4
 
-task :start_server do 
-  puts 'starting server'
-  @serverPID = Process.fork {
-    TCPServer.open(28561) { |server|
-      loop { 
-        socket = server.accept
-        socket << "HTTP/1.0 200 OK\r\n\r\n#{}"
-        socket.close
-      }
-    } 
-  }
-  
-  puts 'server started with PID:#{serverPID}'
-end
-
-task :stop_server do
-  puts 'stopping server wth PID:#{@serverPID}'
-  Process.kill("HUP", @serverPID)
-end
+# task :start_server do
+#   puts 'starting server'
+#   
+#   @serverPID = Process.fork {
+#       TCPServer.open(28561) { |server|
+#         loop { 
+#           socket = server.accept
+#           puts 'processing request'
+#           socket << "HTTP/1.0 200 OK\r\n\r\nHello!"
+#           socket.close
+#         }
+#       } 
+#   }
+#   
+#   puts "server started with PID:#{@serverPID}"
+# end
+# 
+# task :stop_server do
+#   puts 'stopping server wth PID:#{@serverPID}'
+#   Process.kill("HUP", @serverPID)
+# end
 
 # Compile the test swf
-with(SWF_TEST) do |file|
-  # mxmlc file => [:asunit4, :start_server] do |t|
-  mxmlc file => [:asunit4] do |t|
-  
-    paths = FileList["#{TEST_SRC_DIR}/*.*"] 
-    paths.each do |path| 
-      filename = path.match(/\/(.+)$/)[1]
-      FileUtils.cp path, File.join(BUILD_DIR, filename) 
-    end
-  
-    t.input = TEST_SRC_MAIN_FILE
-    t.source_path << TEST_SRC_DIR
-    t.source_path << SRC_DIR
-    t.library_path << LIB_FUTURES_FILE
-    t.debug = true
-    # Rake::Task["stop_server"].execute
-  end
-
-  desc "Compile and run the test swf"
-  flashplayer :test => file
-end
+# with(SWF_TEST) do |file|
+#   
+#   puts "before task def"
+#   
+#   mxmlc file => [:asunit4, :start_server] do |t|
+#      
+#      paths = FileList["#{TEST_SRC_DIR}/*.*"] 
+#      paths.each do |path| 
+#        filename = path.match(/\/(.+)$/)[1]
+#        FileUtils.cp path, File.join(BUILD_DIR, filename) 
+#      end
+#    
+#      t.input = TEST_SRC_MAIN_FILE
+#      t.source_path << TEST_SRC_DIR
+#      t.source_path << SRC_DIR
+#      t.library_path << LIB_DIR
+#      t.debug = true
+#      
+#      # Rake::Task["stop_server"].execute
+#    end
+# 
+#   puts "before task call"
+#   desc "Compile and run the test swf"
+#   flashplayer :test => file
+#   puts "after task call"
+#   # puts "killing server"
+#   # Process.kill("HUP", @serverPID)
+# end
 ##############################
 # SWC
 
@@ -115,8 +124,8 @@ with(SWC) do |file|
   compc file do |t|
     t.input_class = MAIN_CLASS
     t.source_path << SRC_DIR
-    t.include_sources << 'src/org'
-    t.external_library_path << LIB_FUTURES_FILE
+    t.include_sources << SRC_PACKAGE_DIR
+    t.external_library_path << LIB_DIR
     t.static_rsls = false
   end
 

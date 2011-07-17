@@ -1,17 +1,16 @@
 package org.osflash.samson
 {
-	import org.osflash.futures.FutureProgressable
+	import org.osflash.futures.IFuture;
+	import org.osflash.futures.creation.waitOnCritical;
 
-	// generic loader
-	public function load(...urls):FutureProgressable
+	public function load(name:String, url:*, ...rest):IFuture
 	{
-		var future:FutureProgressable = loadSingle(urls[0])
+		const urls:Array = [url].concat(rest)
 		
-		for (var i:int=1; i<urls.length; ++i)
-		{
-			future = FutureProgressable(future.waitOnCritical(loadSingle(urls[i])))
-		}
+		const loadingFutures:Array = urls.map(function (url:String, index:int, arr:Array):IFuture {
+			return loadSingle(name+'-loadSingle:'+url, url)
+		})
 		
-		return future
+		return waitOnCritical.apply(null, [name].concat(loadingFutures))
 	}
 }

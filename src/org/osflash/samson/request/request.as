@@ -6,7 +6,7 @@ package org.osflash.samson.request
 	{
 		const urlRequest:URLRequest = new URLRequest(url)
 		
-		if (data) 				urlRequest.data = data
+		if (data) 				urlRequest.data = processRequestVariables(data)
 		if (method)				urlRequest.method = method
 		if (requestHeaders)		urlRequest.requestHeaders = requestHeaders
 			

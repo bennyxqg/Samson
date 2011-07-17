@@ -1,7 +1,6 @@
 package org.osflash.samson
 {
 	import flash.display.Loader;
-	import flash.errors.IOError;
 	import flash.events.ErrorEvent;
 	import flash.events.Event;
 	import flash.events.IEventDispatcher;
@@ -11,11 +10,10 @@ package org.osflash.samson
 	import flash.media.Sound;
 	import flash.net.URLLoader;
 	import flash.net.URLRequest;
-	import flash.system.LoaderContext;
 	
-	import org.osflash.futures.Future;
-	import org.osflash.futures.FutureProgressable;
-	import org.osflash.futures.creation.TypedFuture;
+	import org.osflash.futures.IFuture;
+	import org.osflash.futures.creation.Future;
+	import org.osflash.samson.request.processRequestVariables;
 
 	/**
 	 *
@@ -28,16 +26,16 @@ package org.osflash.samson
      * </ul>
      * </p> 
 	 */	
-	public function loadSingle(stringOrURLRequest:*, ...rest):FutureProgressable
+	public function loadSingle(name:String, stringOrURLRequest:*, ...rest):IFuture
 	{
 		const urlRequest:URLRequest = (stringOrURLRequest is URLRequest)
 			? stringOrURLRequest
 			: new URLRequest(stringOrURLRequest.toString())
 			
-		const future:FutureProgressable = new TypedFuture()
+		const future:IFuture = new Future(name)
 		
 		// handle how the loading request can be cancelled
-		future.onCancelled(function (...args):void {
+		future.onCancel(function (...args):void {
 			removeEvents()
 			
 			try { loader.close() }
@@ -49,8 +47,10 @@ package org.osflash.samson
 			}
 		})
 			
-		const isAudio:Boolean = urlRequest.url.search('\.mp3|\.aac') >= 0
-		const isBinary:Boolean = urlRequest.url.search('\.swf$|\.png$|\.jpg$|\.jpeg$') >= 0
+		// remove any arguments before type checking
+		const urlStripped:String = urlRequest.url.replace(/\?.*$/, '')
+		const isAudio:Boolean = urlStripped.search('\.mp3|\.aac') >= 0
+		const isBinary:Boolean = urlStripped.search('\.swf$|\.png$|\.jpg$|\.jpeg$') >= 0
 		
 		var loader:Object
 		var eventReporter:IEventDispatcher
@@ -68,14 +68,16 @@ package org.osflash.samson
 		else
 		{
 			loader = new URLLoader()
-			
+				
+			// if one arg then presume its data
 			if (rest.length == 1)
 			{
-				loader.data = rest[0]
+				loader.data = processRequestVariables(rest[0])
 			}
+			// if two args it's data and dataFormat
 			else if (rest.length == 2)
 			{
-				urlRequest.data = rest[0]
+				urlRequest.data = processRequestVariables(rest[0])
 				loader.dataFormat = rest[1]
 			}
 			else if (rest.length > 2)
@@ -104,15 +106,15 @@ package org.osflash.samson
 		}
 		
 		const errorHandler:Function = function (e:ErrorEvent):void {
-			if (future.cancelledListeners > 1)
-			{
+//			if (future.cancelledListeners > 1)
+//			{
 				future.cancel(e)
-			}
-			else
-			{	
-				if (e is IOErrorEvent)					throw new IOError(e.text)
-				else if (e is SecurityErrorEvent)		throw new SecurityError(e.text)
-			}
+//			}
+//			else
+//			{	
+//				if (e is IOErrorEvent)					throw new IOError(e.text)
+//				else if (e is SecurityErrorEvent)		throw new SecurityError(e.text)
+//			}
 		}
 		
 		const removeEvents:Function = function():void {
@@ -143,6 +145,6 @@ package org.osflash.samson
 		
 		loader.load.apply(null, loadArgs)	
 			
-		return future
+		return future.isolate()
 	}
 }
