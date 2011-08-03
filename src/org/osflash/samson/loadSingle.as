@@ -1,6 +1,7 @@
 package org.osflash.samson
 {
 	import com.wispagency.display.Loader
+//	import flash.display.Loader
 	import flash.errors.IOError;
 	import flash.events.ErrorEvent;
 	import flash.events.Event;
@@ -42,7 +43,7 @@ package org.osflash.samson
 			try { loader.close() }
 			catch (e:Error) {}
 			
-			if (isBinary)
+			if (isBinary && loader.hasOwnProperty('unloadAndStop'))
 			{
 				loader.unloadAndStop()
 			}
@@ -109,7 +110,7 @@ package org.osflash.samson
 		const errorHandler:Function = function (e:ErrorEvent):void {
 			//			if (future.cancelledListeners > 1)
 			//			{
-			future.cancel(e)
+			future.cancel('Error for url:' + urlRequest.url + ' : ' + e)
 			//			}
 			//			else
 			//			{	

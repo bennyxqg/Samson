@@ -19,22 +19,38 @@ package {
 
         public function Samson() {
 			
+			loadSingle('image', 'http://taaltreffers.ijstest.nl/data/images/level/6/theme/6/code.jpg')
+				.onComplete(function (data:*):void {
+					trace('success', data)
+				})
+				.onCancel(function (e:*):void {
+					trace('error', e)
+				})
+			
 //			const loader:Loader = new Loader()
 //			loader.addEventListener(Event.COMPLETE, function (e:Event):void {
 //				const minigame:DisplayObject = loader.content
 //			})
 //			loader.load(new URLRequest('http://taaltreffers.ijstest.nl/data/games/minigames/bingo/main.swf'))
 			
-			loadSingle('ttSwftest', 'http://taaltreffers.ijstest.nl/data/games/minigames/bingo/main.swf')
-				.onComplete(function (swf:DisplayObject):void {
-					const typeInfo:XML = describeType(swf) 
-					trace('Yuss')
-				})
+//			isolate(loadSingle('ttSwftest', 'http://taaltreffers.ijstest.nl/language-nl.xml'))
+//				.onComplete(function (xmlRaw:String):void {
+//					trace('Yuss we haves XML')
+//				})
+//			
+//			isolate(
+//				loadSingle('ttSwftest', 'http://taaltreffers.ijstest.nl/data/games/minigames/bingo/main.swf')
+//					.onComplete(function (swf:DisplayObject):void {
+//						const typeInfo:XML = describeType(swf) 
+//						trace('Yuss we haves swfs')
+//					})
+//			)
+			
 //			loadSingle(new URLRequest('test.xml'))
 			
 //			producer()
-//				.onComplete(function (raw:String):void {
-//					trace('client onCompleted:', raw)
+//				.onComplete(function (swf:DisplayObject, xml:XML):void {
+//					trace('client onCompleted:', swf, xml)
 //				})
 //				.onCancel(function (e:ErrorEvent):void {
 //					trace('client onCancelled:', e)
@@ -47,21 +63,20 @@ package {
 //				})
         }
 		
-//		protected function producer():IFuture
-//		{
-//			return isolate(
-//			return load('producer', 'test.xml')
-//					.orElseCompleteWith("<empty></empty>")
-//					.andThen(function (kickstartXMLRaw:String):IFuture {
+		protected function producer():IFuture
+		{
+			return isolate(
+				loadSingle('producer', 'http://taaltreffers.ijstest.nl/language-nl.xml')
+					.orElseCompleteWith("<empty></empty>")
+					.andThen(function (xmlRaw:String):IFuture {
 //						return instantSuccess('kickstartRaw', new XML(kickstartXMLRaw))
-//						return configureModel(flashVars, config)
-//							.mapComplete(function (configXMLExpanded:XMLList):Array {
-//								const config:Config = new Config(flashVars, configXMLExpanded)
-//								const language:ILanguage = buildLanguage(flashVars.locale, configXMLExpanded)
-//								return [config, language, new XML(kickstartXMLRaw)]
-//							})
-//					})
+						return loadSingle('ttSwftest', 'http://taaltreffers.ijstest.nl/data/games/minigames/bingo/main.swf')
+							.mapComplete(function (swf:DisplayObject):Array {
+								return [swf, new XML(xmlRaw)]
+							})
+					})
 //			)
+			)
 //			return isolate(
 //				load('test.xml', 'testd.xml')
 //					.onComplete(fp.producer(function (raw:String):void {
@@ -83,7 +98,7 @@ package {
 //						trace('producer onCancelled:', e)
 //					})
 //			)
-//		}
+		}
     }
 }
 

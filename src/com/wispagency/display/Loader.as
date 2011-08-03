@@ -1,47 +1,44 @@
 ﻿package com.wispagency.display
 {
+	import flash.display.DisplayObject;
+	import flash.display.Loader;
 	import flash.display.Sprite;
 	import flash.events.Event;
 	import flash.events.HTTPStatusEvent;
+	import flash.events.IOErrorEvent;
 	import flash.events.ProgressEvent;
 	import flash.events.SecurityErrorEvent;
 	import flash.net.URLLoader;
 	import flash.net.URLLoaderDataFormat;
+	import flash.net.URLRequest;
 	import flash.system.LoaderContext;
-	import flash.display.DisplayObject;
-	import  flash.utils.ByteArray
-	import flash.net.URLRequest
-	import flash.events.IOErrorEvent
-	import flash.display.Loader;
+	import flash.utils.ByteArray;
 	
-	/**
-	 * ...
-	 * @author Aleksandar Andreev
-	 * @version 1.2
-	 */
 	public class Loader extends Sprite 
 	{
-		
-		private var realLoader:flash.display.Loader;
-		private var loaderContext:LoaderContext = null;
-		private var loader:URLLoader;
-		private var loaderInfoReference:LoaderInfo;
-		private var commObject:Object = { url:''};
-		
+		private var 
+			realLoader:flash.display.Loader,
+			loaderContext:LoaderContext = null,
+			loader:URLLoader,
+			loaderInfoReference:LoaderInfo,
+			commObject:Object = { url:'' }
 		
 		/**
 		 * Contains the root display object of the SWF file or image (JPG, PNG, or GIF)
 		 *  file that was loaded by using the load() or loadBytes() methods.
 		 */
-		public function get content():DisplayObject {
+		public function get content():DisplayObject 
+		{
 			return realLoader.content;
 		}
+		
 		/**
 		 * Returns a LoaderInfo object corresponding to the object being loaded. LoaderInfo objects
 		 *  are shared between the Loader object and the loaded content object. The LoaderInfo object
 		 *  supplies loading progress information and statistics about the loaded file.
 		 */
-		public function get contentLoaderInfo():LoaderInfo{
+		public function get contentLoaderInfo():LoaderInfo
+		{
 			return loaderInfoReference;
 		}
 		
@@ -52,42 +49,58 @@
 		 *  addChild() method of a DisplayObjectContainer instance).
 		 *  The asset appears on the Stage as it loads.
 		 */
-		public function Loader(){
+		public function Loader()
+		{
 			loader = new URLLoader();
-			loader.addEventListener(HTTPStatusEvent.HTTP_STATUS,handleHttpStatus)
-			loader.addEventListener(Event.COMPLETE,handleLoadComplete);
-			loader.addEventListener(IOErrorEvent.IO_ERROR, handleURLLoadError);
+			
+			loader.addEventListener(HTTPStatusEvent.HTTP_STATUS, handleHttpStatus)
+			loader.addEventListener(Event.COMPLETE, handleLoadComplete);
+			loader.addEventListener(IOErrorEvent.IO_ERROR, handleIOError);
 			loader.addEventListener(ProgressEvent.PROGRESS, handleProgress)
-			loader.addEventListener(SecurityErrorEvent.SECURITY_ERROR,handleSecurityError)
+			loader.addEventListener(SecurityErrorEvent.SECURITY_ERROR, handleSecurityError)
+				
 			loader.dataFormat = URLLoaderDataFormat.BINARY;	
 			
-			
 			realLoader = new flash.display.Loader();
+			
 			realLoader.contentLoaderInfo.addEventListener(Event.COMPLETE, handleLoaderComplete)
-			realLoader.contentLoaderInfo.addEventListener(Event.UNLOAD,handleUnload)
-			realLoader.addEventListener(Event.INIT,handleInit)
+			realLoader.contentLoaderInfo.addEventListener(Event.UNLOAD, handleUnload)
+			realLoader.contentLoaderInfo.addEventListener(IOErrorEvent.IO_ERROR, handleIOError);
+			// TODO build this progress into the total 
+//			realLoader.contentLoaderInfo.addEventListener(ProgressEvent.PROGRESS, handleProgress)
+			realLoader.contentLoaderInfo.addEventListener(SecurityErrorEvent.SECURITY_ERROR, handleSecurityError)
+				
+			realLoader.addEventListener(Event.INIT, handleInit)
 			
 			loaderInfoReference = new LoaderInfo(this, loader, realLoader, commObject)
 			addChild(realLoader)
 		}
-		private function handleUnload(event:Event):void {
+		
+		private function handleUnload(event:Event):void 
+		{
 			loaderInfoReference.dispatchEvent(event);
 		}
 		
-		private function handleSecurityError(event:Event):void {
+		private function handleSecurityError(event:Event):void 
+		{
 			loaderInfoReference.dispatchEvent(event);
 		}
-		private function handleInit(event:Event):void {
+		
+		private function handleInit(event:Event):void 
+		{
 			loaderInfoReference.dispatchEvent(event);
 		}
-		private function handleLoaderComplete(event:Event):void {
+		
+		private function handleLoaderComplete(event:Event):void 
+		{
 			loaderInfoReference.dispatchEvent(event);
 		}
 		
 		/**
 		 * Cancels a load() method operation that is currently in progress for the Loader instance.
 		 */
-		public function close():void {
+		public function close():void 
+		{
 			commObject.url = '';
 			loader.close();
 			realLoader.close()
@@ -118,22 +131,24 @@
 			loader.load(request);
 		}
 		
-		
-		private function handleProgress(event:ProgressEvent):void {
-			//trace('handleProgress ' + event);
+		private function handleProgress(event:ProgressEvent):void 
+		{
 			loaderInfoReference.dispatchEvent(event)
 		}
 		
-		private function handleHttpStatus(event:HTTPStatusEvent):void {
+		private function handleHttpStatus(event:HTTPStatusEvent):void 
+		{
 			contentLoaderInfo.dispatchEvent(event)
 		}
 		
-		private function handleURLLoadError(event:IOErrorEvent):void{
-			//trace("URLLoader: " + event.text);
-			loaderInfo.dispatchEvent(event);
-		}		
-		private function handleLoadComplete(event:Event):void {
-			realLoader.loadBytes(loader.data,loaderContext)
+		private function handleIOError(event:IOErrorEvent):void
+		{
+			loaderInfoReference.dispatchEvent(event);
+		}
+		
+		private function handleLoadComplete(event:Event):void
+		{
+			realLoader.loadBytes(loader.data, loaderContext)
 		}
 		
 		/**
@@ -145,25 +160,28 @@
 		 *                            of the LoaderContext object applies{} the checkPolicyFile and securityDomain
 		 *                            properties of the LoaderContext object do not apply.
 		 */
-		public function loadBytes(bytes:ByteArray, context:LoaderContext = null):void {
+		public function loadBytes(bytes:ByteArray, context:LoaderContext = null):void 
+		{
 			loaderContext = context;
 			commObject.url = ''
 		}
+		
 		/**
 		 * Removes a child of this Loader object that was loaded by using the load() method.
 		 *  The property of the associated LoaderInfo object is reset to null.
 		 *  The child is not necessarily destroyed because other objects might have references to it{} however,
 		 *  it is no longer a child of the Loader object.
 		 */
-		public function unload():void {
+		public function unload():void 
+		{
 			commObject.url = '';
 			close()
 			realLoader.unload()
 		}
+		
 		override public function toString():String 
 		{
 			return '[Instance Of Wisp Loader]';
 		}
 	}
-	
 }
