@@ -10,7 +10,16 @@ package {
 	{
         public function Samson() 
 		{
-			producer()			
+			loadSingle('http://taaltreffers.ijstest.nl/data/images/level/6/theme/7/diervriendelijk.jpg')
+				.onComplete(function (data:*):void {
+					trace('image loaded')
+				})
+				.onCancel(function (error:*):void {
+					trace('image fail')
+				})
+				
+			
+//			producer()			
         }
 		
 		protected function producer():IFuture

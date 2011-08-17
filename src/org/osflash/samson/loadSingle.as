@@ -110,8 +110,11 @@ package org.osflash.samson
 		}
 		
 		const errorHandler:Function = function (e:ErrorEvent):void {
+			const throwError:Boolean = !future.hasIsolatedCancelListener
+			
 			future.cancel(e)
-			if (future.hasIsolatedCancelListener == false)
+			
+			if (throwError)
 			{	
 				if (e is IOErrorEvent)					
 				{
