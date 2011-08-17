@@ -1,7 +1,7 @@
 package org.osflash.samson
 {
-	import com.wispagency.display.Loader
-//	import flash.display.Loader
+	import com.wispagency.display.Loader;
+	
 	import flash.errors.IOError;
 	import flash.events.ErrorEvent;
 	import flash.events.Event;
@@ -28,13 +28,15 @@ package org.osflash.samson
 	 * </ul>
 	 * </p> 
 	 */	
-	public function loadSingle(name:String, stringOrURLRequest:*, ...rest):IFuture
+	public function loadSingle(stringOrURLRequest:*, ...rest):IFuture
 	{
 		const urlRequest:URLRequest = (stringOrURLRequest is URLRequest)
 			? stringOrURLRequest
 			: new URLRequest(stringOrURLRequest.toString())
 		
-		const future:IFuture = new Future(name)
+		const future:Future = new Future()
+		const ioError:IOError = new IOError()
+		const securityEvent:SecurityError = new SecurityError()
 		
 		// handle how the loading request can be cancelled
 		future.onCancel(function (...args):void {
@@ -108,15 +110,20 @@ package org.osflash.samson
 		}
 		
 		const errorHandler:Function = function (e:ErrorEvent):void {
-			//			if (future.cancelledListeners > 1)
-			//			{
-			future.cancel('Error for url:' + urlRequest.url + ' : ' + e)
-			//			}
-			//			else
-			//			{	
-			//				if (e is IOErrorEvent)					throw new IOError(e.text)
-			//				else if (e is SecurityErrorEvent)		throw new SecurityError(e.text)
-			//			}
+			future.cancel(e)
+			if (future.hasIsolatedCancelListener == false)
+			{	
+				if (e is IOErrorEvent)					
+				{
+					ioError.message = e.text
+					throw ioError
+				}
+				else if (e is SecurityErrorEvent)		
+				{
+					securityEvent.message = e.text
+					throw securityEvent
+				}
+			}
 		}
 		
 		const removeEvents:Function = function():void {
