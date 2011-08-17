@@ -1,18 +1,8 @@
 package {
-    import com.wispagency.display.Loader;
-    
     import flash.display.DisplayObject;
-    import flash.display.MovieClip;
     import flash.display.Sprite;
-    import flash.events.ErrorEvent;
-    import flash.events.Event;
-    import flash.net.URLRequest;
-    import flash.utils.describeType;
     
     import org.osflash.futures.IFuture;
-    import org.osflash.futures.creation.instantSuccess;
-    import org.osflash.futures.creation.waitOnCritical;
-    import org.osflash.futures.support.isolate;
     import org.osflash.samson.load;
     import org.osflash.samson.loadSingle;
 
@@ -25,11 +15,10 @@ package {
 		
 		protected function producer():IFuture
 		{
-			return isolate(
-				loadSingle('http://taaltreffers.ijstest.nl/language-nll.xml')
-					.orElseCompleteWith("<empty></empty>")
-					.andThen(onXMLComplete)
-			)
+			return load('http://taaltreffers.ijstest.nl/language-nl.xml')
+				.orElseCompleteWith("<empty></empty>")
+				.andThen(onXMLComplete)
+				.isolate()
 				
 			function onXMLComplete(xmlRaw:String):IFuture
 			{
@@ -37,6 +26,7 @@ package {
 				
 				return loadSingle('http://taaltreffers.ijstest.nl/data/games/minigames/bingo/main.swf')
 					.mapComplete(onSWFComplete)
+					.isolate()
 					
 				function onSWFComplete(swf:DisplayObject):Array 
 				{
