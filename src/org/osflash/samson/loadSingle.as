@@ -3,6 +3,7 @@ package org.osflash.samson
 	import com.wispagency.display.Loader;
 	
 	import flash.errors.IOError;
+	import flash.events.AsyncErrorEvent;
 	import flash.events.ErrorEvent;
 	import flash.events.Event;
 	import flash.events.IEventDispatcher;
@@ -35,6 +36,7 @@ package org.osflash.samson
 			: new URLRequest(stringOrURLRequest.toString())
 		
 		const future:Future = new Future()
+		const error:Error = new Error()
 		const ioError:IOError = new IOError()
 		const securityEvent:SecurityError = new SecurityError()
 		
@@ -92,7 +94,8 @@ package org.osflash.samson
 			eventReporter = IEventDispatcher(loader)
 		}
 		
-		const completeHandler:Function = function (e:Event):void {
+		const completeHandler:Function = function (e:Event):void 
+		{
 			removeEvents()
 			
 			const data:* = (isAudio)
@@ -105,28 +108,31 @@ package org.osflash.samson
 			future.complete(data)	
 		}
 		
-		const progressHandler:Function = function (e:ProgressEvent):void {
+		const progressHandler:Function = function (e:ProgressEvent):void 
+		{
 			future.progress(e.bytesTotal / e.bytesLoaded)
 		}
 		
-		const errorHandler:Function = function (e:ErrorEvent):void {
+		const errorHandler:Function = function (e:ErrorEvent):void 
+		{
 			const throwError:Boolean = !future.hasIsolatedCancelListener
+			const error:Error = translateError(e)
 			
-			future.cancel(e)
+			future.cancel(error)
 			
-			if (throwError)
-			{	
-				if (e is IOErrorEvent)					
-				{
-					ioError.message = e.text
-					throw ioError
-				}
-				else if (e is SecurityErrorEvent)		
-				{
-					securityEvent.message = e.text
-					throw securityEvent
-				}
-			}
+			if (throwError)	throw error
+		}
+		
+		function translateError(e:ErrorEvent):Error
+		{
+			var resultError:Error 
+			
+			if (e is IOErrorEvent) 				resultError = ioError					
+			else if (e is SecurityErrorEvent)	resultError = securityEvent
+			else								resultError = error
+			
+			resultError.message = e.text
+			return resultError
 		}
 		
 		const removeEvents:Function = function():void {
@@ -135,11 +141,12 @@ package org.osflash.samson
 			eventReporter.removeEventListener(IOErrorEvent.IO_ERROR, errorHandler)
 			eventReporter.removeEventListener(SecurityErrorEvent.SECURITY_ERROR, errorHandler)
 		}
-		
+			
 		eventReporter.addEventListener(Event.COMPLETE, completeHandler)
 		eventReporter.addEventListener(ProgressEvent.PROGRESS, progressHandler)
 		eventReporter.addEventListener(IOErrorEvent.IO_ERROR, errorHandler)
 		eventReporter.addEventListener(SecurityErrorEvent.SECURITY_ERROR, errorHandler)
+		eventReporter.addEventListener(AsyncErrorEvent.ASYNC_ERROR, errorHandler)
 		
 		const loadArgs:Array = [urlRequest]	
 		

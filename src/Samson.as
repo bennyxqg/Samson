@@ -10,13 +10,14 @@ package {
 	{
         public function Samson() 
 		{
-			loadSingle('http://taaltreffers.ijstest.nl/data/images/level/6/theme/7/diervriendelijk.jpg')
+//			loadSingle('http://taaltreffers.ijstest.nl/data/images/level/6/theme/7/diervriendelijk.jpg')
+			loadSingle('tests.xml')
 				.onComplete(function (data:*):void {
-					trace('image loaded')
+					trace('complete')
 				})
-				.onCancel(function (error:*):void {
-					trace('image fail')
-				})
+//				.onCancel(function (error:Error):void {
+//					trace('cancel error:', error.message)
+//				})
 				
 			
 //			producer()			
